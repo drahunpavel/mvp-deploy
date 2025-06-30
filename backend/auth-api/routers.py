@@ -1,30 +1,15 @@
-"""app main"""
-from fastapi import Depends, FastAPI, HTTPException, status
+"""routers"""
 from sqlalchemy.orm import Session
-from database import SessionLocal, engine
-from models import User
+from fastapi import APIRouter, Depends, HTTPException, status
 from schemas import UserCreate, Token
 from crud import get_user_by_username, create_user
-from auth import create_access_token, verify_password
-import uvicorn
 
-from config import FASTAPI_HOST, FASTAPI_PORT
+from shared.database import get_db
+from shared.auth import create_access_token, verify_password
 
-app = FastAPI()
+router = APIRouter()
 
-
-User.metadata.create_all(bind=engine)
-
-
-def get_db():
-    """db"""
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
-
-@app.post("/register", response_model=Token)
+@router.post("/register", response_model=Token)
 def register(user: UserCreate, db: Session = Depends(get_db)):
     """endpoint register"""
     db_user = get_user_by_username(db, username=user.username)
@@ -34,7 +19,7 @@ def register(user: UserCreate, db: Session = Depends(get_db)):
     access_token = create_access_token(data={"sub": db_user.username})
     return {"access_token": access_token, "token_type": "bearer"}
 
-@app.post("/login", response_model=Token)
+@router.post("/login", response_model=Token)
 def login(user: UserCreate, db: Session = Depends(get_db)):
     """endpoint login"""
     db_user = get_user_by_username(db, username=user.username)
@@ -46,12 +31,3 @@ def login(user: UserCreate, db: Session = Depends(get_db)):
         )
     access_token = create_access_token(data={"sub": db_user.username})
     return {"access_token": access_token, "token_type": "bearer"}
-
-
-
-def main():
-    """run api"""
-    uvicorn.run(app, host=FASTAPI_HOST, port=FASTAPI_PORT)
-
-if __name__ == '__main__':
-    main()

@@ -1,8 +1,11 @@
 """CRUD"""
 from sqlalchemy.orm import Session
-from models import User
 from schemas import UserCreate
-from auth import get_password_hash
+
+from shared.models import User
+from shared.auth import get_password_hash
+
+
 
 def get_user_by_username(db: Session, username: str):
     """get user"""

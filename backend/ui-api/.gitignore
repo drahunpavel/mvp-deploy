@@ -1,0 +1,10 @@
+.venv
+.env
+
+.venv_ui
+
+readme.txt
+
+test.db
+
+__pycache__

@@ -1,0 +1,7 @@
+.vscode
+
+shared.*
+
+*.db
+
+__pycache__
