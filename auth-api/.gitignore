@@ -1,0 +1,8 @@
+.venv
+.env
+
+readme.txt
+
+test.db
+
+__pycache__
