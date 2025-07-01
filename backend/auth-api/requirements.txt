@@ -7,3 +7,4 @@ passlib
 bcrypt<4.1
 python-dotenv
 setuptools
+psycopg2-binary
