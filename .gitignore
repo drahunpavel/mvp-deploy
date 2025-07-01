@@ -5,3 +5,5 @@ shared.*
 *.db
 
 __pycache__
+
+.env
