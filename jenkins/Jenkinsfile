@@ -7,7 +7,6 @@ pipeline {
     
     environment {
         DOCKER_REGISTRY = 'drpaul1864/mvp-deploy'
-        DOCKER_HUB_USER = 'drpaul1864'
         K8S_NAMESPACE = 'mvp-deploy-app'
         BUILD_TAG = "${new Date().format('yyyyMMdd_HHmm')}"
     }
@@ -15,20 +14,17 @@ pipeline {
     stages { 
         stage('Checkout git') {
             steps {
-                sh "echo 'Выбрана ветка: ${params.BRANCH_NAME}'"
+                sh "echo 'Selected branch: ${params.BRANCH_NAME}'"
                 git branch: "${params.BRANCH_NAME}", url: 'git@github.com:drahunpavel/mvp-deploy.git'
             }
         }
-        stage('Check kubectl') {
+        stage('Prepare k8s') {
             steps {
                 sh '''
                     which kubectl
                     kubectl version --client
                 '''
-            }
-        }
-        stage('Prepare k8s') {
-            steps {
+                
                 withCredentials([
                     file(credentialsId: 'kubeconfig-template', variable: 'KUBE_TEMPLATE'),
                     string(credentialsId: 'K8S_TOKEN', variable: 'K8S_TOKEN'),  
@@ -41,12 +37,9 @@ pipeline {
                         envsubst < $KUBE_TEMPLATE > .kube/config
                     '''
                 }
-            }
-        }
-        stage('Test k8s Connection') {
-            steps {
-                    // kubectl cluster-info
-                    // kubectl get nodes
+                
+                echo "Test k8s connection"
+                
                 sh '''
                     export KUBECONFIG=$(pwd)/.kube/config
                     kubectl --insecure-skip-tls-verify=true cluster-info
@@ -54,8 +47,10 @@ pipeline {
                 '''
             }
         }
-        stage('Inject .envs') {
+        stage('Build Images') {
             steps {
+                
+                echo "Inject .envs"
                 withCredentials([
                     file(credentialsId: 'env-auth-api', variable: 'AUTH_ENV'),
                     file(credentialsId: 'env-ui-api', variable: 'UI_ENV'),
@@ -75,20 +70,7 @@ pipeline {
                         echo "BUILD_TAG=$BUILD_TAG" >> .env
                     '''
                 }
-            }
-            // steps {
-            //     echo "BUILD_TAG: ${env.BUILD_TAG}"
-            //     sh 'echo "BUILD_TAG: $BUILD_TAG"'
-            //     sh 'docker compose -f docker-compose.jenkins.yml build'
-            //     script {
-            //         docker.build("${DOCKER_REGISTRY}/auth-api:${env.BUILD_NUMBER}", "./backend/auth-api")
-            //         docker.build("${DOCKER_REGISTRY}/ui-api:${env.BUILD_NUMBER}", "./backend/ui-api")
-            //         docker.build("${DOCKER_REGISTRY}/frontend:${env.BUILD_NUMBER}", "./frontend")
-            //     }
-            // }
-        }
-        stage('Build Images') {
-            steps {
+                
                 echo "Delete images"
                 sh 'docker image prune -a --force'
                 
