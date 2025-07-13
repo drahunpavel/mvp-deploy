@@ -8,6 +8,7 @@ pipeline {
     environment {
         DOCKER_REGISTRY = 'drpaul1864/mvp-deploy'
         K8S_NAMESPACE = 'mvp-deploy-app'
+        K8S_API_IP = '89.169.189.244'
         BUILD_TAG = "${new Date().format('yyyyMMdd_HHmm')}"
     }
     
@@ -97,6 +98,32 @@ pipeline {
                         docker logout
                     '''
                 }
+            }
+        }
+        stage('Deploy to k8s') {
+            steps {
+                sh '''
+                    export KUBECONFIG=$(pwd)/.kube/config
+                    
+                    echo "Clear k8s-temp"
+                    rm -rf ./k8s-temp
+                    mkdir -p ./k8s-temp
+                    
+                    echo "Copy manifestos"
+                    cp ./k8s/auth-api-deployment.yml ./k8s-temp/
+                    cp ./k8s/ui-api-deployment.yml ./k8s-temp/
+                    cp ./k8s/frontend-deployment.yml ./k8s-temp/
+                    
+                    echo "Change tags"
+                    sed -i "s|drpaul1864/mvp-deploy:auth-api-.*|drpaul1864/mvp-deploy:auth-api-${BUILD_TAG}|g" ./k8s-temp/auth-api-deployment.yml
+                    sed -i "s|drpaul1864/mvp-deploy:ui-api-.*|drpaul1864/mvp-deploy:ui-api-${BUILD_TAG}|g" ./k8s-temp/ui-api-deployment.yml
+                    sed -i "s|drpaul1864/mvp-deploy:frontend-.*|drpaul1864/mvp-deploy:frontend-${BUILD_TAG}|g" ./k8s-temp/frontend-deployment.yml
+                    
+                    echo "Apply manifestos"
+                    kubectl --insecure-skip-tls-verify=true -n ${K8S_NAMESPACE} apply -f ./k8s-temp/auth-api-deployment.yml
+                    kubectl --insecure-skip-tls-verify=true -n ${K8S_NAMESPACE} apply -f ./k8s-temp/ui-api-deployment.yml
+                    kubectl --insecure-skip-tls-verify=true -n ${K8S_NAMESPACE} apply -f ./k8s-temp/frontend-deployment.yml
+                '''
             }
         }
     }
