@@ -8,7 +8,7 @@ pipeline {
     environment {
         DOCKER_REGISTRY = 'drpaul1864/mvp-deploy'
         K8S_NAMESPACE = 'mvp-deploy-app'
-        K8S_API_IP = '89.169.189.244'
+        K8S_API_IP = '89.169.182.226'
         BUILD_TAG = "${new Date().format('yyyyMMdd_HHmm')}"
     }
     
@@ -87,7 +87,11 @@ pipeline {
                     docker images || echo "failed"
                 '''
                 
-                withCredentials([usernamePassword(credentialsId: 'docker-hub-user-password', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                withCredentials([usernamePassword(
+                    credentialsId: 'docker-hub-user-password', 
+                    usernameVariable: 'DOCKER_USER', 
+                    passwordVariable: 'DOCKER_PASS'
+                )]) {
                     sh '''
                         echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
         
@@ -126,5 +130,34 @@ pipeline {
                 '''
             }
         }
+    }
+    post {
+        success {
+            script {
+                echo 'Deployment successful!'
+                sendTelegram("Deployment successful!\nProject: ${env.K8S_NAMESPACE}\nbuild: ${env.BUILD_TAG}")
+            }
+        }
+        failure {
+            script {
+                echo 'Deployment failed. Check logs.'
+                sendTelegram("Deployment failed!\nProject: ${env.K8S_NAMESPACE}\nbuild: ${env.BUILD_TAG}")
+            }
+        }
+    }
+}
+
+def sendTelegram(message) {
+    withCredentials([
+        string(credentialsId: 'TELEGRAM_BOT_TOKEN', variable: 'TELEGRAM_BOT_TOKEN'),
+        string(credentialsId: 'TELEGRAM_BOT_CHAT_ID', variable: 'TELEGRAM_BOT_CHAT_ID')
+    ]) {
+        echo "Message: ${message}"
+
+        sh """
+            curl -s -X POST https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage \
+            -d chat_id=${TELEGRAM_BOT_CHAT_ID} \
+            -d text="${message}" \
+        """
     }
 }
