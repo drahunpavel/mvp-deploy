@@ -6,9 +6,7 @@ pipeline {
     }
     
     environment {
-        DOCKER_REGISTRY = 'drpaul1864/mvp-deploy'
         K8S_NAMESPACE = 'mvp-deploy-app'
-        K8S_API_IP = '89.169.182.226'
         BUILD_TAG = "${new Date().format('yyyyMMdd_HHmm')}"
     }
     
@@ -29,7 +27,8 @@ pipeline {
                 withCredentials([
                     file(credentialsId: 'kubeconfig-template', variable: 'KUBE_TEMPLATE'),
                     string(credentialsId: 'K8S_TOKEN', variable: 'K8S_TOKEN'),  
-                    string(credentialsId: 'K8S_CA_CERT', variable: 'K8S_CA_CERT')
+                    string(credentialsId: 'K8S_CA_CERT', variable: 'K8S_CA_CERT'),
+                    string(credentialsId: 'K8S_API_IP', variable: 'K8S_API_IP')
                 ]) {
                     // sh 'echo "$K8S_TOKEN" | head -c 50' 
                     // sh 'echo "$K8S_CA_CERT" | head -c 50' 
@@ -87,11 +86,17 @@ pipeline {
                     docker images || echo "failed"
                 '''
                 
-                withCredentials([usernamePassword(
-                    credentialsId: 'docker-hub-user-password', 
-                    usernameVariable: 'DOCKER_USER', 
-                    passwordVariable: 'DOCKER_PASS'
-                )]) {
+                withCredentials([
+                    usernamePassword(
+                        credentialsId: 'docker-hub-user-password', 
+                        usernameVariable: 'DOCKER_USER', 
+                        passwordVariable: 'DOCKER_PASS'
+                ),
+                    string(
+                        credentialsId: 'DOCKER_REGISTRY', 
+                        variable: 'DOCKER_REGISTRY'
+                    )
+                ]) {
                     sh '''
                         echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
         
