@@ -1,0 +1,32 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: prometheus-node-reader
+rules:
+  - apiGroups: [""]
+    resources:
+      [
+        "nodes",
+        "nodes/proxy",
+        "nodes/metrics",
+        "services",
+        "endpoints",
+        "pods",
+        "namespaces",
+        "services/proxy",
+      ]
+    verbs: ["get", "list", "watch"]
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: prometheus-node-reader
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: prometheus-node-reader
+subjects:
+  - kind: ServiceAccount
+    name: prometheus
+    namespace: monitoring
