@@ -1,4 +1,4 @@
-# CI/CD Pipeline for k8s app
+# CI/CD for k8s app
 
 Process for building, publishing and deploying an application to k8s with monitoring and notifications.
 
@@ -11,4 +11,4 @@ Process for building, publishing and deploying an application to k8s with monito
 - Grafana
 - Telegram
 
-![Scheme of CI/CD pipeline](CI-CD scheme.png)
+![Scheme of CI/CD pipeline](https://github.com/drahunpavel/mvp-deploy/blob/main/CI-CD%20scheme.png)
