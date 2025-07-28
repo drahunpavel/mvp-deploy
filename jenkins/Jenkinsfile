@@ -30,8 +30,6 @@ pipeline {
                     string(credentialsId: 'K8S_CA_CERT', variable: 'K8S_CA_CERT'),
                     string(credentialsId: 'K8S_API_IP', variable: 'K8S_API_IP')
                 ]) {
-                    // sh 'echo "$K8S_TOKEN" | head -c 50' 
-                    // sh 'echo "$K8S_CA_CERT" | head -c 50' 
                     sh '''
                         mkdir -p .kube
                         envsubst < $KUBE_TEMPLATE > .kube/config
