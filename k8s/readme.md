@@ -29,6 +29,7 @@ Manifests for deploying app components to k8s, including backend, frontend, data
 ```bash
 kubectl apply -f namespace.yml
 
+kubectl apply -f pvc-postgres.yml
 kubectl apply -f postgres-deployment.yml
 kubectl apply -f postgres-service.yml
 
