@@ -26,7 +26,7 @@ const LoginPage = () => {
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen">
-      <h1 className="text-3xl font-bold mb-4">Войти</h1>
+      <h1 className="text-3xl font-bold mb-4">Войти !!!!!!</h1>
       <form
         onSubmit={handleSubmit}
         className="w-full max-w-sm bg-white p-6 rounded shadow"
