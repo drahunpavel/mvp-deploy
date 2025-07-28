@@ -24,9 +24,6 @@ data:
             target_label: instance
           - target_label: __address__
             replacement: blackbox-exporter.monitoring.svc.cluster.local:9115
-          - source_labels: []
-            target_label: environment
-            replacement: production
 
       - job_name: 'kubernetes-cadvisor'
         scheme: https
